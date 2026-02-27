@@ -17,8 +17,12 @@
 *.log
 *.gtf
 *.mod
+*.cfg
 
 .DS_Store
 /output
 /data
 /bin
+/info
+/run
+/results/cleaned
