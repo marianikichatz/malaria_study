@@ -18,6 +18,8 @@
 *.gtf
 *.mod
 *.cfg
+*.fna
+*.dat
 
 .DS_Store
 /output
@@ -26,3 +28,4 @@
 /info
 /run
 /results/cleaned
+/results/BLAST
