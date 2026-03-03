@@ -21,6 +21,10 @@
 *.cfg
 *.fna
 *.dat
+*.genome
+*.dmnd
+*.len
+*.diamond
 
 .DS_Store
 /output
@@ -30,3 +34,7 @@
 /run
 /results/cleaned
 /results/BLAST
+/results/proteinorhto_cache_myproject
+/results/proteins
+/results/proteins/busco
+/results

@@ -3,9 +3,6 @@
 #Documentation Section
 
 """
-
-Blast Parser
-
 Script name: cleanFastaNObirds.py
 
 Version: 1.00
@@ -19,7 +16,7 @@ retrieving the scientific names of all bird species.
 As a result, the fasta files that are used for the downstream analyses will only contain sequences that do not belong to bird species, 
 which is important for the accuracy of the results. 
 
-User-defined functions:
+User-defined functions: get_arguments(), read_bird_scaffolds(), clean_fasta(), write_output(), main()
 Non-standard modules: None
 
 Procedure:
