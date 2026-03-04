@@ -6,146 +6,137 @@
 
 ## Scope
 
-In this repository, the main goal was to process the *Haemoproteus tartakovskyi* genome assembly, predict genes, and check the evolutionary relationships of the different malaria host species. The workflow included:
+In this repository, the main goal was to process the *Haemoproteus tartakovskyi* genome assembly, predict genes, and check the evolutionary relationships of the different malaria host species. 
+
+## Workflow 
 
 1. Prepare and filter the *Haemoproteus tartakovskyi* assembly
 2. Predict genes with GeneMark-ES
 3. Extract gene and protein sequences
 4. Make predictions against SwissProt for avian host contamination
 5. Retrieve scaffold IDs associated with bird like hits
+6. Run orthology clustering with proteinortho6.pl using the 8 proteomes
+7. Run BUSCO to evaluate completeness of the predicted proteomes across species
+8. Extract shared BUSCOs and create FASTA files for each BUSCO with one sequence per species
 
-## Repository structure (key folders)
-
-- `data/`: input genomes and training data
-- `scripts/`: custom filtering/parsing scripts
-- `results/cleaned/`: filtered genome assemblies
-- `results/gene_predicted/`: GeneMark predictions and extracted genes/proteins
-- `results/BLAST/`: BLAST host-screening outputs
-- `results/scaffolds_birds/`: scaffold lists flagged as possible host-derived
 
 ## Environment and dependencies
 
 Main tools used:
 
 - `gmes_petap.pl` (GeneMark-ES)
-- `gffParse.pl`
+- `gffParse.pl` 
 - `blastx`, `blastp` (BLAST)
 - `python3`
-- `sed`, `gunzip`
+- `proteinortho6.pl` (Proteinortho) [version: 6.3.6]
+- `busco` (BUSCO) [version: 6.0.0]
 
 External data linked into this workspace:
 
 - `/resources/binp29/Data/malaria/taxonomy.dat`
 - `/resources/binp29/Data/malaria/uniprot_sprot.dat`
 
+## Scripts
+
+- `removeScaffold.py`: A Python script to filter scaffolds based on length and GC content.
+- `gffParse.pl`: A Perl script to convert GFF3 files into a tab-delimited format and extract gene and protein sequences.
+- `datParse.py`: A Python script to parse BLAST results and extract scaffold IDs associated with avian hits.
+- `cleanFastaNObirds.py`: A Python script to filter out scaffolds with avian hits from the assembly.
+- `busco.py`: A Python script to parse BUSCO results and extract shared BUSCOs across species.
+
 ## Steps 
 
-### 1) Gene prediction test run on *Plasmodium cynomolgi*
+*Step 1:*
+- Prepare and filter the *Haemoproteus tartakovskyi* assembly. We used the `removeScaffold.py` script to filter out scaffolds shorter than 3000 bp, which are likely to be of low quality and may not contain complete genes and we also removed scaffolds with GC content greater than 35%. We decided on these filtering criteria based on the GC curve of the assembly. The command used was:
 
 ```bash
-gmes_petap.pl --cores 10 --ES --sequence data/Plasmodium_cynomolgi.genome
+python3 scripts/removeScaffold.py data/Haemoproteus_tartakovskyi.raw.genome 35 Ht.genome 3000
 ```
-
-### 2) Decompress raw *Haemoproteus tartakovskyi* genome
+*Step 2:*
+- Predict genes with GeneMark-ES. We ran GeneMark-ES on the filtered assembly to predict gene models. The command used was:
 
 ```bash
-gunzip data/Haemoproteus_tartakovskyi.raw.genome.gz
+nohup gmes_petap.pl --ES --cores 20 --min_contig 10000 --sequence results/cleaned/Ht.genome > logmin.txt 1>&2&
 ```
 
-Input used after decompression: `data/Haemoproteus_tartakovskyi.raw.genome`
-
-### 3) Contamination filtering (GC + minimum scaffold length)
+*Step 3:*
+- Change the GTF file format so the separator is a tab and not a space. We used the `gffParse.pl` script to convert the GFF3 output from GeneMark-ES into a tab-delimited format. The command used was:
 
 ```bash
-python3 scripts/removeScaffold.py data/Haemoproteus_tartakovskyi.raw.genome 35 results/cleaned/Ht.genome 3000
+cat results/gene_predicted/genemark.gtf | sed "s/ GC=.*\tGeneMark.hmm/\tGeneMark.hmm/" > Ht2.gff
+
+gffParse.pl -i results/cleaned/Ht.genome -g results/gene_predicted/Ht2.gff -b H.tartakovskyi_genes -c -p 
 ```
 
-Parameters:
-
-- GC threshold: `35`
-- minimum scaffold length: `3000`
-
-Output:
-
-- `results/cleaned/Ht.genome`
-
-### 4) Gene prediction on filtered *H. tartakovskyi* assembly
+*Step 4:*
+- Make predictions against SwissProt for avian host contamination. We used `blastx` and `blastp` to search the predicted protein sequences against the SwissProt database. We used different parameters for each search. The parameters were chosesn based on the expected sensitivity and specificity of the searches. The commands used were:
 
 ```bash
-nohup gmes_petap.pl --ES --cores 20 --min_contig 10000 --sequence results/cleaned/Ht.genome > logmin.txt 2>&1 &
+blastx -query results/gene_predicted/H.tartakovskyi_genes.fna -db SwissProt -out avian_results.txt -evalue 1e-10 -num_threads 32
+
+nohup blastp -query results/gene_predicted/H.tartakovskyi_genes.faa -db SwissProt -out avian_results_blastp -num_descriptions 10 -num_alignments 5 -num_threads 20
+```
+*Step 5:*
+- Retrieve scaffold IDs associated with bird like hits. We used the `datParse.py` script to parse the BLAST results and extract the scaffold IDs that had hits to avian proteins. The command used was:
+
+for blastx results:
+```bash
+python3 scripts/datParser.py results/BLAST/avian_results_blastx results/gene_predicted/H.tartakovskyi_genes.fna taxonomy.dat uniprot_sprot.dat > scaffolds_blastx.txt
+```
+for blastp results:
+```bash
+python3 scripts/datParser.py results/BLAST/avian_results_blastp results/gene_predicted/H.tartakovskyi_genes.faa taxonomy.dat 
+uniprot_sprot.dat > scaffolds_blastp.txt
 ```
 
-Main output used in later steps:
+*Step 6:*
+- Remove scaffolds with avian hits from the assembly. We used the `cleanFastaNObirds.py` script to filter out the scaffolds that had hits to avian proteins. The command used was:
 
-- `results/gene_predicted/genemark.gtf`
+for blastx results:
+```bash
+python3 scripts/cleanFastaNObirds.py results/gene_predicted/H.tartakovskyi_genes.fna results/scaffolds_birds/scaffolds_blastx.txt cleaned_x.fasta
+```
 
-### 5) Reformat GeneMark GTF -> GFF-like file for parsing
+for blastp results:
+```bash
+python3 scripts/cleanFastaNObirds.py results/gene_predicted/H.tartakovskyi_genes.faa results/scaffolds_birds/scaffolds_blastp.txt cleaned_p.fasta
+```
+
+*Step 7:*
+- Generate refrence gene/protein files with `gffParse.pl` for the 8 species. We used the `gffParse.pl` script. To prepare comparable proteomes for BUSCO/orthology analysis, we extracted coding and protein sequences from each species genome. This produced per species outputs with prefixes Pb, Pc, Pf, Pk, Pv, Tg, and Py, used in downstream BUSCO and proteinortho steps. The command used was:
 
 ```bash
-cat results/gene_predicted/genemark.gtf | sed "s/ GC=.*\tGeneMark.hmm/\tGeneMark.hmm/" > results/gene_predicted/Ht2.gff
+bin/gffParse.pl -i data/Plasmodium_berghei.genome -g data/P_berghei.gtf -b Pb -c -p
+
+bin/gffParse.pl -i data/Plasmodium_cynomolgi.genome -g data/cynomolgi.gtf -b Pc -c -p
+
+bin/gffParse.pl -i data/Plasmodium_faciparum.genome -g data/Pfalciparum.gtf -b Pf -c -p
+
+bin/gffParse.pl -i data/Plasmodium_knowlesi.genome -g data/knowlesi.gtf -b Pk -c -p
+
+bin/gffParse.pl -i data/Plasmodium_vivax.genome -g data/vivax.gtf -b Pv -c -p
+
+bin/gffParse.pl -i data/Toxoplasma_gondii.genome -g data/Tg.gff -b Tg -c -p
+
+bin/gffParse.pl -i data/Plasmodium_yoelii.genome -g data/Plasmodium_yoelii.gtf -b Py -c -p
 ```
 
-Output:
-
-- `results/gene_predicted/Ht2.gff`
-
-### 6) Extract predicted genes and proteins
+*Step 8:*
+- Run orthology clustering with proteinortho6.pl using the 8 proteomes. We used the `proteinortho6.pl` script to cluster the protein sequences from the 8 species into orthologous groups. We selected diamond as the alignment tool as it is faster and more sensitive than BLAST for this task. The command used was:
 
 ```bash
-gffParse.pl -i results/cleaned/Ht.genome -g results/gene_predicted/Ht2.gff -b H.tartakovskyi_genes -c -p
+nohup proteinortho6.pl -p=diamond -cpus=20 -project=malaria_proteinortho Ht_cleaned_headers.faa Pb_headers.faa Pc_headers.faa Pf_headers.faa Pk_headers.faa Pv_headers.faa Py_headers.faa Tg_headers.faa > proteinortho.log 2>&1 &
 ```
 
-Generated files (in `results/gene_predicted/`):
-
-- `H.tartakovskyi_genes.fna`
-- `H.tartakovskyi_genes.faa`
-
-### 7) BLAST screening against SwissProt for avian contamination
+*Step 9:*
+- Run BUSCO to evaluate completeness of the predicted proteomes across species. We used the `run_busco.sh` script to run BUSCO on the predicted protein sequences for each species. We used the `apicomplexa_odb12` lineage dataset as it is specific to the group of organisms we are studying. The command used was:
 
 ```bash
-blastx -query results/gene_predicted/H.tartakovskyi_genes.fna -db SwissProt -out results/BLAST/avian_results_blastx -evalue 1e-10 -num_threads 32
+nohup ./run_busco.sh > busco.log 2>&1 &
 ```
+*Step 10:*
+- Extract shared BUSCOs and create FASTA files for each BUSCO with one sequence per species. We used the `busco.py` script to parse the BUSCO results and extract the shared BUSCOs across all species. We then created FASTA files for each BUSCO with one sequence per species. The command used was:
 
 ```bash
-nohup blastp -query results/gene_predicted/H.tartakovskyi_genes.faa -db SwissProt -out results/BLAST/avian_results_blastp -num_descriptions 10 -num_alignments 5 -num_threads 20 > blastp.log 2>&1 &
+python3 scripts/busco.py
 ```
-
-Output files:
-
-- `results/BLAST/avian_results_blastx`
-- `results/BLAST/avian_results_blastp`
-
-### 8) Link taxonomy and SwissProt metadata
-
-```bash
-ln -s /resources/binp29/Data/malaria/taxonomy.dat taxonomy.dat
-ln -s /resources/binp29/Data/malaria/uniprot_sprot.dat uniprot_sprot.dat
-```
-
-### 9) Retrieve scaffolds with potential bird-host hits
-
-From BLASTX output:
-
-```bash
-python3 scripts/datParser.py results/BLAST/avian_results_blastx results/gene_predicted/H.tartakovskyi_genes.fna taxonomy.dat uniprot_sprot.dat > results/scaffolds_birds/scaffolds_blastx.txt
-```
-
-From BLASTP output:
-
-```bash
-python3 scripts/datParser.py results/BLAST/avian_results_blastp results/gene_predicted/H.tartakovskyi_genes.faa taxonomy.dat uniprot_sprot.dat > results/scaffolds_birds/scaffolds_blastp.txt
-```
-
-Outputs:
-
-- `results/scaffolds_birds/scaffolds_blastx.txt`
-- `results/scaffolds_birds/scaffolds_blastp.txt`
-
-## Status
-
-Completed:
-
-- filtered the *H. tartakovskyi* genome for likely contamination
-- predicted genes and extracted nucleotide/protein sequences
-- screened predicted genes with BLASTX/BLASTP against SwissProt
-- retrieved scaffold candidates associated with bird-related hits
