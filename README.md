@@ -184,13 +184,7 @@ consense < all_trees_7.txt > consensus_7species.tree
 
 The final output of this pipeline includes a consensus tree that illustrates the phylogenetic relationships among the species based on shared BUSCOs. The tree can be visualized using tools like iTOL to interpret the evolutionary relationships among the malaria host species. The results provide insights into the evolutionary history of malaria parasites and their hosts, which can be valuable for understanding disease dynamics and developing strategies for malaria control.
 The trees from the analysis are displayed here:
-<p><strong>8-species consensus tree</strong></p>
-<img src="trees/8sp_tree.svg" alt="8-species consensus tree showing phylogenetic relationships among Haemoproteus tartakovskyi and seven Plasmodium and Toxoplasma species" width="1000" />
 
-<p><strong>7-species consensus tree</strong></p>
-<img src="trees/unrooted_7.svg" alt="7-species consensus tree displaying phylogenetic relationships among Plasmodium species without Toxoplasma" width="1000" />
-
-If images do not render in your viewer, open files directly:
 - [trees/8sp_tree.svg](trees/8sp_tree.svg)
 - [trees/unrooted_7.svg](trees/unrooted_7.svg)
 
