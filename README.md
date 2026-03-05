@@ -182,7 +182,7 @@ consense < all_trees_7.txt > consensus_7species.tree
 
 ## Results
 
-The final output of this pipeline includes a consensus tree that illustrates the phylogenetic relationships among the species based on shared BUSCOs. The tree can be visualized using tools like iTOL to interpret the evolutionary relationships among the malaria host species. The results provide insights into the evolutionary history of malaria parasites and their hosts, which can be valuable for understanding disease dynamics and developing strategies for malaria control.
+The final output of this pipeline includes consensus trees that illustrate the phylogenetic relationships among the species based on shared BUSCOs. The trees can be visualized using tools like iTOL to interpret the evolutionary relationships among the malaria host species. The results provide insights into the evolutionary history of malaria parasites and their hosts, which can be valuable for understanding disease dynamics and developing strategies for malaria control.
 The trees from the analysis are displayed here:
 
 - [trees/8sp_tree.svg](trees/8sp_tree.svg)
@@ -190,4 +190,6 @@ The trees from the analysis are displayed here:
 
 ## Conclusion
 
-In this pipeline, we processed the *Haemoproteus tartakovskyi* genome assembly, predicted genes, and evaluated the evolutionary relationships of malaria host species. The final output includes a consensus tree that illustrates the phylogenetic relationships among the species based on shared BUSCOs. This analysis provides insights into the evolutionary history of malaria parasites and their hosts. 
+In this pipeline, we processed the *Haemoproteus tartakovskyi* genome assembly, predicted genes, and evaluated the evolutionary relationships of malaria host species. The final output includes consensus trees that illustrate the phylogenetic relationships among the species based on shared BUSCOs. This analysis provides insights into the evolutionary history of malaria parasites and their hosts. 
+As we observed, the *Haemoproteus tartakovskyi* is closely related to *Plasmodium* species, which is consistent with previous studies. The trees also show that although the *Haemoproteus tartakovskyi* is closely related to *Plasmodium* species, it forms a distinct clade, which suggests that it has a unique evolutionary history. 
+In conclusion, this pipeline provides a comprehensive approach to analyze the genome assembly of *Haemoproteus tartakovskyi* and its evolutionary relationships with other malaria host species, contributing to our understanding of malaria parasite evolution and host interactions. 
