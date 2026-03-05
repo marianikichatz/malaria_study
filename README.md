@@ -18,6 +18,8 @@ In this repository, the main goal was to process the *Haemoproteus tartakovskyi*
 6. Run orthology clustering with proteinortho6.pl using the 8 proteomes
 7. Run BUSCO to evaluate completeness of the predicted proteomes across species
 8. Extract shared BUSCOs and create FASTA files for each BUSCO with one sequence per species
+9. Align the shared BUSCOs with Clustalo and make trees with RaxML per BUSCO
+10. 
 
 
 ## Environment and dependencies
@@ -30,6 +32,8 @@ Main tools used:
 - `python3`
 - `proteinortho6.pl` (Proteinortho) [version: 6.3.6]
 - `busco` (BUSCO) [version: 6.0.0]
+- `clustalo` (Clustalo) [version: 1.2.4]
+- `raxmlHPC` (RAxML) [version: 8.2.12]
 
 External data linked into this workspace:
 
@@ -139,4 +143,16 @@ nohup ./run_busco.sh > busco.log 2>&1 &
 
 ```bash
 python3 scripts/busco.py
+```
+*Step 11:*
+- Align the shared BUSCOs with Clustalo and concatenate the alignments using `raxml`. We used `clustalo` to align the sequences for each BUSCO and then concatenated the alignments into a single file for phylogenetic analysis. The script used for this step is `align.sh` and it takes the FASTA files of the shared BUSCOs as input aligns them and makes a tree with RAxML per BUSCO. The command used was:
+
+for the 8 species:
+```bash
+nohup scripts/align.sh 8 > align8.log 2>&1 &
+```
+
+for the 7 species:
+```bash
+nohup scripts/align.sh 7 > align7.log 2>&1 &
 ```
