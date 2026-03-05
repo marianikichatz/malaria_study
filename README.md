@@ -19,7 +19,8 @@ In this repository, the main goal was to process the *Haemoproteus tartakovskyi*
 7. Run BUSCO to evaluate completeness of the predicted proteomes across species
 8. Extract shared BUSCOs and create FASTA files for each BUSCO with one sequence per species
 9. Align the shared BUSCOs with Clustalo and make trees with RaxML per BUSCO
-10. 
+10. Make a consensus tree using the trees from the previous step and `consense` from Phylip
+
 
 
 ## Environment and dependencies
@@ -34,6 +35,7 @@ Main tools used:
 - `busco` (BUSCO) [version: 6.0.0]
 - `clustalo` (Clustalo) [version: 1.2.4]
 - `raxmlHPC` (RAxML) [version: 8.2.12]
+- `consense` (Phylip) [version: 3.697]
 
 External data linked into this workspace:
 
@@ -155,4 +157,17 @@ nohup scripts/align.sh 8 > align8.log 2>&1 &
 for the 7 species:
 ```bash
 nohup scripts/align.sh 7 > align7.log 2>&1 &
+```
+
+*Step 12:*
+- Make a consensus tree using the trees from the previous step and `consense` from Phylip. We used the `consense` program from the Phylip package to create a consensus tree from the individual trees generated for each BUSCO. The command used was:
+
+for the 8 species:
+```bash
+consense < all_trees_8.txt > consensus_8species.tree
+```
+
+for the 7 species:
+```bash
+consense < all_trees_7.txt > consensus_7species.tree
 ```
