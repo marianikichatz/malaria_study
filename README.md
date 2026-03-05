@@ -160,7 +160,15 @@ nohup scripts/align.sh 7 > align7.log 2>&1 &
 ```
 
 *Step 12:*
-- Make a consensus tree using the trees from the previous step and `consense` from Phylip. We used the `consense` program from the Phylip package to create a consensus tree from the individual trees generated for each BUSCO. The command used was:
+- Make a consensus tree using the trees from the previous step and `consense` from Phylip. We used the `consense` program from the Phylip package to create a consensus tree from the individual trees generated for each BUSCO. Before running `consense`, we moved the individual trees to a single file. The command used was:
+
+to move the trees to a single file:
+```bash
+cat trees_8/*.tree > all_trees_8.txt
+
+cat trees_7/*.tree > all_trees_7.txt
+```
+to create the consensus tree:
 
 for the 8 species:
 ```bash
@@ -171,3 +179,14 @@ for the 7 species:
 ```bash
 consense < all_trees_7.txt > consensus_7species.tree
 ```
+
+## Results
+
+The final output of this pipeline includes a consensus tree that illustrates the phylogenetic relationships among the species based on shared BUSCOs. The tree can be visualized using tools like iTOL to interpret the evolutionary relationships among the malaria host species. The results provide insights into the evolutionary history of malaria parasites and their hosts, which can be valuable for understanding disease dynamics and developing strategies for malaria control.
+The trees from the analysis are displayed here:
+![8-species consensus tree](results/figures/consensus_8species.svg)
+![7-species consensus tree](results/figures/consensus_7species.svg)
+
+## Conclusion
+
+In this pipeline, we processed the *Haemoproteus tartakovskyi* genome assembly, predicted genes, and evaluated the evolutionary relationships of malaria host species. The final output includes a consensus tree that illustrates the phylogenetic relationships among the species based on shared BUSCOs. This analysis provides insights into the evolutionary history of malaria parasites and their hosts. 
