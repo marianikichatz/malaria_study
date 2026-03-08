@@ -128,7 +128,7 @@ bin/gffParse.pl -i data/Plasmodium_yoelii.genome -g data/Plasmodium_yoelii.gtf -
 ```
 
 *Step 8:*
-- Run orthology clustering with proteinortho6.pl using the 8 proteomes. We used the `proteinortho6.pl` script to cluster the protein sequences from the 8 species into orthologous groups. We selected diamond as the alignment tool as it is faster and more sensitive than BLAST for this task. The command used was:
+- Run orthology clustering with proteinortho6.pl using the 8 proteomes. We used the `proteinortho6.pl` script to cluster the protein sequences from the 8 species into orthologous groups. We selected diamond as the alignment tool as it is faster and more sensitive than BLAST for this task. Also we decided to proceed with the blastp results, as they provided a stricter criteria for the orthology analysis. The command used was:
 
 ```bash
 nohup proteinortho6.pl -p=diamond -cpus=20 -project=malaria_proteinortho Ht_cleaned_headers.faa Pb_headers.faa Pc_headers.faa Pf_headers.faa Pk_headers.faa Pv_headers.faa Py_headers.faa Tg_headers.faa > proteinortho.log 2>&1 &
@@ -183,10 +183,9 @@ consense < all_trees_7.txt > consensus_7species.tree
 ## Results
 
 The final output of this pipeline includes consensus trees that illustrate the phylogenetic relationships among the species based on shared BUSCOs. The trees can be visualized using tools like iTOL to interpret the evolutionary relationships among the malaria host species. The results provide insights into the evolutionary history of malaria parasites and their hosts, which can be valuable for understanding disease dynamics and developing strategies for malaria control.
-The trees from the analysis are displayed here:
+The consensus 8 species tree from the analysis is displayed here:
 
-- [trees/8sp_tree.svg](trees/8sp_tree.svg)
-- [trees/unrooted_7.svg](trees/unrooted_7.svg)
+- [trees/consensus_tree8.svg](trees/consensus_tree8.svg)
 
 ## Conclusion
 

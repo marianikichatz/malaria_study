@@ -38,3 +38,6 @@
 /results/proteins
 /results/proteins/busco
 /results
+scripts/__pycache__/concat.cpython-313.pyc
+pf.protortho.ids
+pf.busco.ids

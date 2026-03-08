@@ -154,7 +154,7 @@ def write_output(cleaned_sequences, output_file):
 
 # main function 
 def main():
-    try:  # we try to run the program
+    try:  
         # first get the arguments from the command line
         python_script_name, input_file1, input_file2, output_file = get_arguments()
 

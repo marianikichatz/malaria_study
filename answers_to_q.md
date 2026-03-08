@@ -4,19 +4,19 @@
 
 Not always. In a phylogenetic tree, parasites usually group by how genetically related they are not only by what host they infect. So parasites with similar hosts can group together but they can also be in different branches if host switching happened.
 
-2. **With the new genome file, make a gene prediction. You will probably still have some scaﬀolds that derive from the bird. These should be short. Why?***
+2. **With the new genome file, make a gene prediction. You will probably still have some scaﬀolds that derive from the bird. These should be short. Why?**
 
 They can still remain because GC filtering is not perfect. Some host scaffolds have GC content similar to the parasite
 so they pass the filter. The remaining contaminanted scaffolds are usually short fragments from mixed assembly.
 
-3. **Insert the missing data in the above table. Use bash, not inter-
-net!**
+3. **Insert the missing data in the above table. Use bash, not internet!**
 
 Commands used: 
 
 for the genome size 
 ```bash
-grep -v "^>" data/Plasmodium_berghei.genome | tr -d "\n"| wc -m [this was used for all the species]
+grep -v "^>" data/Plasmodium_berghei.genome | tr -d "\n"| wc -m 
+#this was used for all the species
 ```
 
 for the number of genes 
@@ -105,3 +105,43 @@ Yes, but partly. Host range can influence tree topology because parasites adapti
 
 15. **Are the BUSCO proteins also found as orthologs in the proteinortho output?**
 
+To figure this out, we can run the commands:
+
+E.g, for the  *Plasmodium falciparum*:
+
+BUSCOs protein IDs:
+``` bash
+grep -v '^#' results/proteins/busco/Pf_headers_busco/run_apicomplexa_odb12/full_table.tsv | grep -E 'Complete|Duplicated' | cut -f3 | sort | uniq > pf.busco.ids
+```
+Proteinortho orthologs protein IDs:
+``` bash
+cut -f7 results/proteins/malaria_proteinortho.proteinortho.tsv | grep -v '^#'| grep -v "^*"| tr "," "\n"| sort | uniq > pf.protortho.ids
+```
+Then we can compare the two lists:
+``` bash
+total=$(wc -l < pf.busco.ids) # total number of BUSCOs
+missing=$(diff -u pf.busco.ids pf.protortho.ids| grep -E "^-[0-9]*_g"| wc -l) # number of BUSCOs missing in proteinortho
+echo "$((total - missing)) / $total" # number of BUSCOs found in proteinortho
+```
+So for *Plasmodium falciparum*, 436/476 BUSCOs are found in the proteinortho.
+
+16. **Make a script that concatenates the alignments for each organism and BUSCO into one fasta file that in the end should contain seven sequences. Alternatively, use bash.**
+
+The script can be found here: [concat.py](scripts/concat.py)
+
+17. **Make a tree of this “superalignment’’. Does it correspond to the consense tree?**
+
+To make the tree, we can use the command:
+
+``` bash
+# create the output directory for the tree
+mkdir -p results/proteins/busco/supertree_8
+
+# run RAxML on the concatenated alignment
+nohup raxmlHPC -s results/proteins/busco/concat/all8species.faa -n allspecies8 -m PROTGAMMAAUTO -p 12345 -o Tg -w $(realpath results/proteins/busco/supertree_8) 
+```
+The resulting tree can be found here: 
+
+- [trees/supertree.svg](trees/supertree.svg)
+
+The trees are partly similar but not identical. Main difference is that *Plasmodium vivax* and *Plasmodium cynomolgi* are sister taxa in the consensus tree and then *Plasmodium knowlesi*  joins them, while in the supertree *Plasmodium knowlesi* is sister to *Plasmodium cynomolgi* and then *Plasmodium vivax* joins them. So the main conflict is in the position of *Plasmodium vivax*, *Plasmodium cynomolgi* and *Plasmodium knowlesi*. This is likely because of the different methods used to build the trees. The consensus tree is based on many individual gene trees, while the supertree is based on a single concatenated alignment.
